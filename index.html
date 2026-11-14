@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#16a34a">
+<title>KambingCare AI — Monitor & Pakan Kambing</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --bg:#f3f7f4; --card:#ffffff;
+  --primary:#16a34a; --primary-dark:#15803d; --primary-soft:#e9f9ee;
+  --teal:#0d9488; --amber:#f59e0b; --red:#ef4444;
+  --text:#0f172a; --muted:#64748b; --line:#e3eae5;
+  --radius:20px;
+  --shadow-sm:0 2px 8px rgba(15,23,42,.05);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+  background:var(--bg);color:var(--text);padding-bottom:96px;
+  overscroll-behavior-y:contain;-webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:16px}
+.page{display:none;padding:18px 16px 8px;animation:fade .28s ease}
+.page.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* HERO */
+.hero{
+  background:linear-gradient(140deg,#16a34a 0%,#0d9488 55%,#0f766e 100%);
+  border-radius:26px;padding:22px 20px 20px;color:#fff;
+  box-shadow:0 14px 34px rgba(13,148,136,.28);position:relative;overflow:hidden;
+}
+.hero::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.09);top:-80px;right:-60px}
+.hero::before{content:"";position:absolute;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.07);bottom:-60px;left:-40px}
+.hero-greet{font-size:13px;opacity:.85;font-weight:600;letter-spacing:.3px;position:relative}
+.clock{font-size:46px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin:4px 0 2px;position:relative;font-variant-numeric:tabular-nums}
+.clock .sec{font-size:22px;opacity:.6;font-weight:700}
+.hero-date{font-size:13px;opacity:.85;position:relative}
+.next-box{
+  margin-top:16px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);
+  border-radius:16px;padding:12px 14px;position:relative;
+  display:flex;align-items:center;gap:12px;backdrop-filter:blur(6px);
+}
+.next-ico{font-size:22px}
+.next-label{font-size:11px;opacity:.85;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
+.next-title{font-size:14px;font-weight:700;margin-top:1px}
+.next-time{margin-left:auto;text-align:right}
+.next-time b{font-size:18px;font-variant-numeric:tabular-nums;display:block}
+.next-time span{font-size:11px;opacity:.8}
+.ai-chip{
+  display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;
+  background:rgba(255,255,255,.22);padding:3px 8px;border-radius:99px;
+  position:relative;margin-left:6px;
+}
+
+/* GENERIC */
+.sec-title{font-size:15px;font-weight:800;margin:22px 2px 10px;display:flex;align-items:center;justify-content:space-between}
+.sec-title .link{font-size:12px;color:var(--primary);font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);border:1px solid var(--line);margin-bottom:12px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted);font-size:12.5px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;white-space:nowrap}
+.badge.ok{background:#dcfce7;color:#15803d}
+.badge.warn{background:#fef3c7;color:#b45309}
+.badge.bad{background:#fee2e2;color:#b91c1c}
+.badge.gray{background:#eef2f0;color:#64748b}
+
+.btn{
+  width:100%;border:none;border-radius:15px;padding:15px;font-size:15px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,#16a34a,#0d9488);color:#fff;
+  box-shadow:0 8px 20px rgba(22,163,74,.25);transition:transform .12s ease,opacity .12s;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn:active{transform:scale(.975);opacity:.92}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.btn.ghost{background:#fff;color:var(--primary);border:1.5px solid #cdebd8;box-shadow:none}
+.btn.small{padding:11px;font-size:14px;border-radius:13px}
+.btn.danger{background:#fff;color:#dc2626;border:1.5px solid #fecaca;box-shadow:none}
+
+/* GOAT CARD */
+.goat-card{
+  background:#fff;border-radius:var(--radius);padding:14px;border:1px solid var(--line);
+  box-shadow:var(--shadow-sm);margin-bottom:10px;display:flex;gap:13px;align-items:center;
+  cursor:pointer;transition:transform .12s;
+}
+.goat-card:active{transform:scale(.985)}
+.avatar{
+  width:52px;height:52px;border-radius:16px;flex:0 0 auto;
+  background:linear-gradient(140deg,#dcfce7,#a7f3d0);
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:#15803d;
+}
+.goat-name{font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.goat-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.bar{height:6px;border-radius:99px;background:#eef2f0;margin-top:8px;overflow:hidden}
+.bar > i{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:#fff;border-radius:16px;padding:12px 8px;text-align:center;border:1px solid var(--line);box-shadow:var(--shadow-sm)}
+.stat b{display:block;font-size:20px;font-weight:800;line-height:1.1}
+.stat span{font-size:10.5px;color:var(--muted);font-weight:600}
+
+/* FORM */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:#334155;margin-bottom:6px}
+.field label .hint{font-weight:500;color:var(--muted);font-size:11px}
+.input{
+  width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);
+  background:#fbfdfc;outline:none;transition:.18s;font-weight:600;color:var(--text);
+}
+.input:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(22,163,74,.1)}
+select.input{
+  appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;
+}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* SCHEDULE */
+.sched{background:#fff;border-radius:18px;padding:14px;margin-bottom:10px;border:1px solid var(--line);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:13px}
+.sched.off{opacity:.5}
+.sched-time{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;background:var(--primary-soft);color:var(--primary-dark);padding:9px 12px;border-radius:13px;flex:0 0 auto}
+.sched-title{font-weight:700;font-size:14px}
+.sched-menu{font-size:12px;color:var(--muted);margin-top:2px}
+
+.switch{position:relative;width:46px;height:27px;flex:0 0 auto}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#d7e2db;border-radius:99px;transition:.22s;cursor:pointer}
+.slider::before{content:"";position:absolute;height:21px;width:21px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.22s;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+.switch input:checked + .slider{background:var(--primary)}
+.switch input:checked + .slider::before{transform:translateX(19px)}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f1f5f2;cursor:pointer}
+.check-item:last-child{border-bottom:none}
+.tick{width:24px;height:24px;border-radius:8px;flex:0 0 auto;border:2px solid #cbd5cf;display:flex;align-items:center;justify-content:center;transition:.16s;background:#fff}
+.check-item.on .tick{background:var(--primary);border-color:var(--primary)}
+.tick i{font-size:12px;color:#fff;opacity:0;transition:.16s}
+.check-item.on .tick i{opacity:1}
+.check-label{font-size:13.5px;font-weight:600;color:#334155;flex:1}
+.check-item.on .check-label{color:#0f172a}
+
+/* RESULT */
+.result{border-radius:22px;padding:20px;text-align:center;color:#fff;margin-bottom:14px;position:relative;overflow:hidden}
+.result.green{background:linear-gradient(140deg,#22c55e,#15803d);box-shadow:0 12px 30px rgba(22,163,74,.3)}
+.result.amber{background:linear-gradient(140deg,#fbbf24,#d97706);box-shadow:0 12px 30px rgba(245,158,11,.3)}
+.result.red{background:linear-gradient(140deg,#f87171,#b91c1c);box-shadow:0 12px 30px rgba(239,68,68,.3)}
+.result .score{font-size:44px;font-weight:800;line-height:1;letter-spacing:-2px}
+.result .score small{font-size:16px;opacity:.7;font-weight:600}
+.result .status{font-size:15px;font-weight:800;margin-top:6px}
+.result .sub{font-size:12px;opacity:.9;margin-top:6px;line-height:1.5}
+.result .ring{position:absolute;width:170px;height:170px;border-radius:50%;border:26px solid rgba(255,255,255,.1);top:-70px;right:-50px}
+
+/* FEED */
+.feed-item{display:flex;align-items:center;gap:13px;padding:13px;background:#fbfdfc;border-radius:15px;margin-bottom:9px;border:1px solid var(--line)}
+.feed-ico{width:42px;height:42px;border-radius:13px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--primary-dark);flex:0 0 auto}
+.feed-name{font-size:13px;font-weight:700}
+.feed-desc{font-size:11.5px;color:var(--muted);margin-top:1px}
+.feed-val{font-size:15px;font-weight:800;color:var(--primary-dark);margin-left:auto;text-align:right;white-space:nowrap}
+.feed-val small{display:block;font-size:10px;color:var(--muted);font-weight:600}
+
+.tip{background:#fffbeb;border:1px solid #fde68a;border-radius:15px;padding:13px;font-size:12.5px;color:#92400e;line-height:1.55}
+.tip b{color:#78350f}
+
+.accordion{background:#fff;border:1px solid var(--line);border-radius:16px;margin-bottom:9px;overflow:hidden}
+.accordion summary{padding:14px 16px;font-size:13.5px;font-weight:700;cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px}
+.accordion summary::-webkit-details-marker{display:none}
+.accordion summary .chev{margin-left:auto;color:var(--muted);transition:.2s;font-size:14px}
+.accordion[open] summary .chev{transform:rotate(90deg)}
+.accordion .acc-body{padding:0 16px 15px;font-size:12.5px;color:#475569;line-height:1.65}
+
+/* NAV */
+.bottomnav{
+  position:fixed;bottom:0;left:0;right:0;z-index:60;display:flex;gap:2px;
+  background:rgba(255,255,255,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+}
+.navbtn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+  border:none;background:none;color:#94a3b8;font-size:10.5px;font-weight:700;
+  padding:7px 0;border-radius:14px;cursor:pointer;transition:.18s;
+}
+.navbtn i{font-size:19px}
+.navbtn.active{color:var(--primary);background:var(--primary-soft)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.modal-bg.open{display:flex}
+.modal{
+  background:#fff;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+  border-radius:26px 26px 0 0;padding:8px 18px calc(22px + env(safe-area-inset-bottom));
+  animation:slideUp .3s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+.modal-handle{width:42px;height:4px;border-radius:99px;background:#dbe3de;margin:8px auto 14px}
+.modal h3{margin:0 0 4px;font-size:18px;font-weight:800}
+.modal .sub{margin:0 0 18px;font-size:12.5px;color:var(--muted)}
+
+/* TOAST */
+#toast{
+  position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);
+  background:#0f172a;color:#fff;padding:12px 20px;border-radius:14px;
+  font-size:13px;font-weight:600;z-index:200;opacity:0;pointer-events:none;
+  transition:.3s;max-width:88vw;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+.empty{text-align:center;padding:34px 18px;color:var(--muted)}
+.empty .ico{font-size:44px;margin-bottom:10px;opacity:.55}
+.empty p{font-size:13px;margin:0 0 16px;line-height:1.6}
+
+/* AI LOADING */
+.ai-loading{
+  display:flex;align-items:center;gap:12px;padding:18px;
+  background:linear-gradient(135deg,#f0fdf4,#ecfeff);
+  border-radius:18px;border:1px solid #cdebd8;margin-bottom:14px;
+}
+.ai-loading .spinner{
+  width:26px;height:26px;border:3px solid #cdebd8;border-top-color:var(--primary);
+  border-radius:50%;animation:spin .8s linear infinite;flex:0 0 auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-loading .txt{font-size:12.5px;font-weight:600;color:#15803d}
+.ai-loading .txt small{display:block;font-weight:500;color:#64748b;font-size:11px;margin-top:2px}
+
+.pill-ai{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;
+  background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;
+  padding:4px 10px;border-radius:99px;letter-spacing:.3px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-greet">
+      <i class="fas fa-hand-sparkles"></i> Selamat datang
+      <span class="ai-chip"><i class="fas fa-robot"></i> Powered by Groq AI</span>
+    </div>
+    <div class="clock" id="clockBig">--:--<span class="sec">:--</span></div>
+    <div class="hero-date" id="heroDate">—</div>
+    <div class="next-box">
+      <div class="next-ico"><i class="fas fa-bowl-food"></i></div>
+      <div class="grow">
+        <div class="next-label">Jadwal pakan berikutnya</div>
+        <div class="next-title" id="nextTitle">Belum ada jadwal</div>
+      </div>
+      <div class="next-time">
+        <b id="nextCountdown">--:--</b>
+        <span id="nextAt">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="stTotal" style="color:#0f172a">0</b><span>Total Kambing</span></div>
+    <div class="stat"><b id="stSehat" style="color:#16a34a">0</b><span>Sehat</span></div>
+    <div class="stat"><b id="stWaspada" style="color:#f59e0b">0</b><span>Perlu Cek</span></div>
+  </div>
+
+  <div class="sec-title">
+    <span><i class="fas fa-horse-head" style="color:var(--primary)"></i> Kambing Saya</span>
+    <span class="link" onclick="openAddGoat()"><i class="fas fa-plus"></i> Tambah</span>
+  </div>
+  <div id="goatList"></div>
+</section>
+
+<!-- ============ JADWAL ============ -->
+<section id="page-jadwal" class="page">
+  <div class="sec-title" style="margin-top:4px">
+    <span><i class="fas fa-clock" style="color:var(--primary)"></i> Jadwal Pakan</span>
+    <span class="link" onclick="openAddSchedule()"><i class="fas fa-plus"></i> Jadwal</span>
+  </div>
+  <div class="card" style="background:linear-gradient(140deg,#f0fdf4,#ecfdf5);border-color:#cdebd8">
+    <div class="row">
+      <div class="avatar" style="background:#d1fae5"><i class="fas fa-hourglass-half"></i></div>
+      <div class="grow">
+        <div class="muted" style="font-weight:700;font-size:11px;letter-spacing:.4px">PAKAN BERIKUTNYA</div>
+        <div style="font-weight:800;font-size:16px;margin-top:2px" id="jNextTitle">—</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:800;font-size:19px;color:var(--primary-dark);font-variant-numeric:tabular-nums" id="jNextCd">--:--</div>
+      </div>
+    </div>
+  </div>
+  <div id="schedList"></div>
+  <div class="tip" style="margin-top:6px">
+    <i class="fas fa-lightbulb"></i> <b>Tips:</b> Kambing makan lebih efisien 3× sehari. Hijauan pagi & sore, konsentrat sore. Selalu sediakan air bersih 24 jam.
+  </div>
+</section>
+
+<!-- ============ CEK KESEHATAN ============ -->
+<section id="page-cek" class="page">
+  <div class="sec-title" style="margin-top:4px">
+    <span><i class="fas fa-stethoscope" style="color:var(--primary)"></i> Cek Kesehatan</span>
+    <span class="pill-ai"><i class="fas fa-robot"></i> AI</span>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Pilih Kambing</label>
+      <select class="input" id="cekGoat"></select>
+    </div>
+
+    <div class="field">
+      <label>Ukur Badan <span class="hint">(untuk estimasi berat)</span></label>
+      <div class="grid2">
+        <input class="input" id="inLD" type="number" inputmode="decimal" placeholder="Lingkar dada (cm)">
+        <input class="input" id="inPB" type="number" inputmode="decimal" placeholder="Panjang badan (cm)">
+      </div>
+      <div class="muted" style="margin-top:8px">
+        Estimasi berat: <b id="estBB" style="color:var(--primary-dark)">— kg</b>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Data Vital <span class="hint">(opsional)</span></label>
+      <div class="grid2" style="margin-bottom:10px">
+        <input class="input" id="inSuhu" type="number" step="0.1" inputmode="decimal" placeholder="Suhu (°C)">
+        <input class="input" id="inNafas" type="number" inputmode="numeric" placeholder="Napas (/menit)">
+      </div>
+      <input class="input" id="inNadi" type="number" inputmode="numeric" placeholder="Denyut nadi (/menit)">
+      <div class="muted" style="margin-top:8px">Normal: suhu 38.5–40°C · napas 15–30/menit · nadi 70–90/menit</div>
+    </div>
+
+    <div class="field" style="margin-bottom:6px">
+      <label>Body Condition Score (BCS) — <b id="bcsVal" style="color:var(--primary-dark)">3</b>/5</label>
+      <input type="range" id="inBCS" min="1" max="5" step="0.5" value="3" style="width:100%;accent-color:var(--primary);height:6px">
+      <div class="muted" style="display:flex;justify-content:space-between;margin-top:4px">
+        <span>1 Kurus</span><span>3 Ideal</span><span>5 Gemuk</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-title"><span><i class="fas fa-magnifying-glass"></i> Ciri Fisik</span><span class="muted">centang jika normal</span></div>
+  <div class="card" id="checklist"></div>
+
+  <button class="btn" id="btnAnalisa" onclick="runAnalysis()">
+    <i class="fas fa-wand-magic-sparkles"></i> Analisa dengan AI
+  </button>
+  <div id="hasilCek" style="margin-top:16px"></div>
+</section>
+
+<!-- ============ PAKAN ============ -->
+<section id="page-pakan" class="page">
+  <div class="sec-title" style="margin-top:4px">
+    <span><i class="fas fa-wheat-awn" style="color:var(--primary)"></i> Rekomendasi Pakan</span>
+    <span class="pill-ai"><i class="fas fa-robot"></i> AI</span>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>Berat Badan Kambing (kg)</label>
+      <input class="input" id="pakanBB" type="number" inputmode="decimal" placeholder="Contoh: 30">
+    </div>
+    <div class="field" style="margin-bottom:8px">
+      <label>Fase / Kondisi</label>
+      <select class="input" id="pakanFase">
+        <option value="cempe">Cempe (&lt; 3 bulan)</option>
+        <option value="lepas">Lepas Sapih (3–6 bulan)</option>
+        <option value="dewasa" selected>Dewasa (&gt; 6 bulan)</option>
+        <option value="bunting">Bunting / Menyusui</option>
+        <option value="gemuk">Program Penggemukan</option>
+      </select>
+    </div>
+    <button class="btn" id="btnPakan" onclick="hitungPakan()">
+      <i class="fas fa-calculator"></i> Hitung dengan AI
+    </button>
+  </div>
+
+  <div id="pakanHasil"></div>
+
+  <div class="sec-title"><span><i class="fas fa-book-open"></i> Panduan Menu Pakan</span></div>
+  <details class="accordion">
+    <summary><i class="fas fa-seedling" style="color:#16a34a"></i> Hijauan (Rumput & Legum)<i class="fas fa-chevron-right chev"></i></summary>
+    <div class="acc-body">
+      <b>Rumput:</b> Gajah, Odot, Raja, Setaria, Benggala.<br>
+      <b>Legum:</b> Lamtoro, Indigofera, Kaliandra, Gamal, Turi, Sentro.<br><br>
+      Porsi utama 60–70% dari total pakan. Berikan dalam kondisi segar, layu 2–3 jam agar tidak kembung. Hindari rumput basah/berembun.
+    </div>
+  </details>
+  <details class="accordion">
+    <summary><i class="fas fa-wheat-awn" style="color:#d97706"></i> Konsentrat & Sumber Energi<i class="fas fa-chevron-right chev"></i></summary>
+    <div class="acc-body">
+      Dedak padi, jagung giling, bungkil kelapa, bungkil kedelai, gaplek.<br><br>
+      Porsi 1–2% dari bobot badan. Untuk penggemukan bisa sampai 60% dari total pakan. Berikan 2× sehari, jangan sekaligus banyak — risiko bloat/asidosis.
+    </div>
+  </details>
+  <details class="accordion">
+    <summary><i class="fas fa-flask" style="color:#8b5cf6"></i> Mineral & Suplemen<i class="fas fa-chevron-right chev"></i></summary>
+    <div class="acc-body">
+      Garam dapur / mineral block (tersedia bebas), kapur pertanian, tepung tulang.<br><br>
+      Tambahkan 10–20 gram mineral per hari per ekor. Penting untuk kambing bunting, menyusui, dan masa pertumbuhan.
+    </div>
+  </details>
+  <details class="accordion">
+    <summary><i class="fas fa-droplet" style="color:#0ea5e9"></i> Air Minum<i class="fas fa-chevron-right chev"></i></summary>
+    <div class="acc-body">
+      Kebutuhan air ± 10–15% bobot badan per hari (± 3–5 liter/ekor).<br><br>
+      Harus tersedia 24 jam dan diganti minimal 2× sehari. Kambing menyusui butuh air lebih banyak. Air kotor = sumber cacing & diare.
+    </div>
+  </details>
+  <details class="accordion">
+    <summary><i class="fas fa-ban" style="color:#ef4444"></i> Pakan yang Harus Dihindari<i class="fas fa-chevron-right chev"></i></summary>
+    <div class="acc-body">
+      Daun singkong mentah berlebih, daun tembakau, rumput berjamur, pakan basi, sisa dapur bergaram tinggi, plastik/puntung rokok.<br><br>
+      Rumput yang masih berembun pagi bisa menyebabkan kembung (bloat) — layukan dulu.
+    </div>
+  </details>
+</section>
+
+<!-- ============ NAV ============ -->
+<nav class="bottomnav">
+  <button class="navbtn active" data-page="home">
+    <i class="fas fa-house"></i><span>Beranda</span>
+  </button>
+  <button class="navbtn" data-page="jadwal">
+    <i class="fas fa-clock"></i><span>Jadwal</span>
+  </button>
+  <button class="navbtn" data-page="cek">
+    <i class="fas fa-heart-pulse"></i><span>Cek</span>
+  </button>
+  <button class="navbtn" data-page="pakan">
+    <i class="fas fa-wheat-awn"></i><span>Pakan</span>
+  </button>
+</nav>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   KONFIGURASI
+========================================================= */
+const GROQ_API_KEY = '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';
+const GROQ_MODEL   = 'llama-3.3-70b-versatile';
+const GROQ_URL     = 'https://api.groq.com/openai/v1/chat/completions';
+
+/* =========================================================
+   INDEXEDDB LAYER
+========================================================= */
+const DB_NAME = 'kambingcare_db';
+const DB_VER  = 1;
+let _db = null;
+
+function openDB(){
+  if(_db) return Promise.resolve(_db);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('goats'))     db.createObjectStore('goats', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('schedules')) db.createObjectStore('schedules', {keyPath:'id'});
+      if(!db.objectStoreNames.contains('kv'))        db.createObjectStore('kv');
+    };
+    req.onsuccess = () => { _db = req.result; resolve(_db); };
+    req.onerror   = () => reject(req.error);
+  });
+}
+async function dbGetAll(store){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const r = tx.objectStore(store).getAll();
+    r.onsuccess = () => res(r.result || []);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function dbPut(store, obj){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const r = tx.objectStore(store).put(obj);
+    r.onsuccess = () => res(true);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function dbDelete(store, key){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const r = tx.objectStore(store).delete(key);
+    r.onsuccess = () => res(true);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function dbGetKV(key){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readonly');
+    const r = tx.objectStore('kv').get(key);
+    r.onsuccess = () => res(r.result);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function dbSetKV(key, val){
+  const db = await openDB();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readwrite');
+    const r = tx.objectStore('kv').put(val, key);
+    r.onsuccess = () => res(true);
+    r.onerror   = () => rej(r.error);
+  });
+}
+
+/* =========================================================
+   STATE
+========================================================= */
+function uid(){ return Math.random().toString(36).slice(2,9); }
+
+const state = {
+  goats: [],
+  schedules: [],
+  lastFeedDate: {}
+};
+
+async function loadState(){
+  try{
+    state.goats     = await dbGetAll('goats');
+    state.schedules = await dbGetAll('schedules');
+    const lf = await dbGetKV('lastFeedDate');
+    state.lastFeedDate = lf || {};
+
+    if(!state.schedules.length){
+      const defaults = [
+        {id:uid(), time:'06:30', label:'Hijauan Pagi',       menu:'Rumput gajah / odot / legum', portion:'60% hijauan harian', active:true},
+        {id:uid(), time:'12:00', label:'Hijauan & Air Siang', menu:'Rumput segar + air bersih',   portion:'20% hijauan harian', active:true},
+        {id:uid(), time:'16:30', label:'Konsentrat Sore',    menu:'Konsentrat + hijauan',        portion:'1–2% bobot badan',   active:true}
+      ];
+      for(const s of defaults) await dbPut('schedules', s);
+      state.schedules = defaults;
+    }
+  }catch(e){ console.error('Load error', e); }
+}
+
+/* =========================================================
+   HELPERS
+========================================================= */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+
+let toastTimer;
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+function statusInfo(score){
+  if(score === null || score === undefined) return {cls:'gray', label:'Belum Dicek', color:'#94a3b8', icon:'fa-circle-question'};
+  if(score >= 85) return {cls:'ok',   label:'Sehat',           color:'#16a34a', icon:'fa-circle-check'};
+  if(score >= 65) return {cls:'warn', label:'Perlu Perhatian', color:'#f59e0b', icon:'fa-triangle-exclamation'};
+  return {cls:'bad', label:'Perlu Penanganan', color:'#ef4444', icon:'fa-circle-exclamation'};
+}
+
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =========================================================
+   GROQ AI
+========================================================= */
+async function callGroq(messages, opts = {}){
+  const body = {
+    model: opts.model || GROQ_MODEL,
+    messages,
+    temperature: opts.temperature !== undefined ? opts.temperature : 0.4,
+    max_tokens: opts.max_tokens || 800,
+    response_format: opts.json ? {type:'json_object'} : undefined
+  };
+  const res = await fetch(GROQ_URL, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':'Bearer ' + GROQ_API_KEY
+    },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error('Groq API error ' + res.status + ': ' + err.slice(0,200));
+  }
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+/* Analisa kesehatan dengan AI */
+async function aiHealthAnalysis(payload){
+  const sys = `Kamu adalah dokter hewan spesialis kambing di Indonesia. Berikan analisa kesehatan SINGKAT, PRAKTIS, dan AKURAT dalam Bahasa Indonesia. Selalu jawab dalam format JSON valid.`;
+
+  const user = `Analisa data kesehatan kambing berikut:
+
+Nama: ${payload.name || 'Kambing'}
+Ras: ${payload.breed || '-'}
+Umur: ${payload.age || '?'} bulan
+Jenis Kelamin: ${payload.gender || '-'}
+
+Data Vital:
+- Suhu: ${payload.suhu ?? 'tidak diukur'} °C (normal 38.5–40)
+- Napas: ${payload.nafas ?? 'tidak diukur'} /menit (normal 15–30)
+- Nadi: ${payload.nadi ?? 'tidak diukur'} /menit (normal 70–90)
+- BCS: ${payload.bcs ?? '?'}/5
+
+Estimasi Berat: ${payload.bb ? payload.bb.toFixed(1)+' kg' : 'tidak diukur'}
+
+Ciri fisik TIDAK normal (perlu perhatian): ${payload.badChecks.length ? payload.badChecks.join(', ') : 'tidak ada — semua normal'}
+
+Berikan respons JSON dengan format PERSIS berikut:
+{
+  "score": <angka 0-100>,
+  "status": "<Sehat|Perlu Perhatian|Perlu Penanganan>",
+  "ringkasan": "<1-2 kalimat ringkas kondisi kambing>",
+  "masalah": ["<masalah 1>", "<masalah 2>", ...],
+  "saran": ["<saran tindakan 1>", "<saran tindakan 2>", ...],
+  "urgensi": "<Rendah|Sedang|Tinggi>"
+}
+
+Pedoman skor: 90-100 sangat sehat, 75-89 sehat, 60-74 perlu perhatian, <60 perlu penanganan. Jangan gunakan markdown.`;
+
+  const raw = await callGroq([
+    {role:'system', content:sys},
+    {role:'user', content:user}
+  ], {json:true, max_tokens:600, temperature:0.3});
+
+  try{
+    const j = JSON.parse(raw);
+    if(typeof j.score !== 'number') throw new Error('no score');
+    return j;
+  }catch(e){
+    // Fallback: parse loosely
+    const m = raw.match(/\{[\s\S]*\}/);
+    if(m) return JSON.parse(m[0]);
+    throw new Error('Invalid JSON from AI');
+  }
+}
+
+/* Rekomendasi pakan dengan AI */
+async function aiFeedRecommendation(bb, fase){
+  const faseLabel = {
+    cempe:'Cempe < 3 bulan', lepas:'Lepas sapih 3–6 bulan',
+    dewasa:'Dewasa > 6 bulan', bunting:'Bunting / Menyusui', gemuk:'Program penggemukan'
+  }[fase] || fase;
+
+  const sys = `Kamu ahli nutrisi ternak kambing Indonesia. Jawab SINGKAT dan PRAKTIS dalam format JSON valid.`;
+  const user = `Kambing berat ${bb} kg, fase: ${faseLabel}.
+Berikan rekomendasi pakan harian dalam JSON:
+{
+  "hijauan_kg": <angka>,
+  "konsentrat_kg": <angka>,
+  "air_liter": <angka>,
+  "mineral_gram": <angka>,
+  "menu_harian": ["<menu pagi>", "<menu siang>", "<menu sore>"],
+  "catatan": "<1-2 kalimat saran penting>"
+}`;
+
+  const raw = await callGroq([
+    {role:'system', content:sys},
+    {role:'user', content:user}
+  ], {json:true, max_tokens:450, temperature:0.35});
+
+  try{ return JSON.parse(raw); }
+  catch(e){
+    const m = raw.match(/\{[\s\S]*\}/);
+    if(m) return JSON.parse(m[0]);
+    throw new Error('Invalid JSON from AI');
+  }
+}
+
+/* Fallback lokal jika AI gagal */
+function localHealthScore(d){
+  let score = 100;
+  if(d.suhu){
+    if(d.suhu < 38 || d.suhu > 40.5) score -= 25;
+    else if(d.suhu < 38.5 || d.suhu > 40) score -= 10;
+  }
+  if(d.nafas){
+    if(d.nafas < 12 || d.nafas > 40) score -= 20;
+    else if(d.nafas < 15 || d.nafas > 30) score -= 8;
+  }
+  if(d.nadi){
+    if(d.nadi < 60 || d.nadi > 110) score -= 15;
+    else if(d.nadi < 70 || d.nadi > 90) score -= 6;
+  }
+  if(d.bcs < 2) score -= 15;
+  else if(d.bcs > 4.5) score -= 10;
+  score -= d.badChecks.length * 7;
+  return Math.max(0, score);
+}
+
+function localFeed(bb, fase){
+  const map = {
+    cempe:{h:0.08,k:0.020}, lepas:{h:0.10,k:0.018},
+    dewasa:{h:0.11,k:0.012}, bunting:{h:0.12,k:0.022}, gemuk:{h:0.08,k:0.030}
+  };
+  const p = map[fase] || map.dewasa;
+  return {
+    hijauan_kg: Math.max(1.5, bb*p.h),
+    konsentrat_kg: Math.max(0.15, bb*p.k),
+    air_liter: Math.max(2, bb*0.12),
+    mineral_gram: Math.max(10, bb*0.5),
+    menu_harian: ['Hijauan pagi (rumput + legum)', 'Hijauan siang + air bersih', 'Hijauan sore + konsentrat'],
+    catatan: 'Rekomendasi lokal (AI tidak tersedia). Pastikan air bersih 24 jam.'
+  };
+}
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+$$('.navbtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    $$('.navbtn').forEach(b=>b.classList.remove('active'));
+    $$('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    $('#page-' + btn.dataset.page).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+function gotoPage(name){
+  $$('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.page === name));
+  $$('.page').forEach(p=>p.classList.remove('active'));
+  $('#page-' + name).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* =========================================================
+   CLOCK & COUNTDOWN
+========================================================= */
+function nextFeeding(){
+  const now = new Date();
+  const act = state.schedules.filter(s=>s.active);
+  if(!act.length) return null;
+  let best = null;
+  act.forEach(s=>{
+    const [h,m] = s.time.split(':').map(Number);
+    const d = new Date(now);
+    d.setHours(h, m, 0, 0);
+    if(d <= now) d.setDate(d.getDate() + 1);
+    if(!best || d < best.date) best = {date:d, sched:s};
+  });
+  return best;
+}
+function pad(n){ return String(n).padStart(2,'0'); }
+function formatCd(ms){
+  if(ms < 0) ms = 0;
+  const total = Math.floor(ms/1000);
+  const h = Math.floor(total/3600);
+  const m = Math.floor((total%3600)/60);
+  const s = total%60;
+  if(h > 0) return `${h}j ${pad(m)}m`;
+  return `${pad(m)}:${pad(s)}`;
+}
+const HARI  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+let lastFedCheck = '';
+
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function tick(){
+  const now = new Date();
+  const cb = $('#clockBig');
+  if(cb) cb.innerHTML = `${pad(now.getHours())}:${pad(now.getMinutes())}<span class="sec">:${pad(now.getSeconds())}</span>`;
+  const hd = $('#heroDate');
+  if(hd) hd.textContent = `${HARI[now.getDay()]}, ${now.getDate()} ${BULAN[now.getMonth()]} ${now.getFullYear()}`;
+
+  const nf = nextFeeding();
+  if(nf){
+    const cd = formatCd(nf.date - now);
+    const isTomorrow = nf.date.getDate() !== now.getDate();
+    if($('#nextTitle'))      $('#nextTitle').textContent = nf.sched.label;
+    if($('#nextCountdown'))  $('#nextCountdown').textContent = cd;
+    if($('#nextAt'))         $('#nextAt').textContent = (isTomorrow ? 'besok ' : '') + nf.sched.time;
+    if($('#jNextTitle'))     $('#jNextTitle').textContent = `${nf.sched.label} — ${nf.sched.menu}`;
+    if($('#jNextCd'))        $('#jNextCd').textContent = cd;
+  }else{
+    ['#nextTitle','#jNextTitle'].forEach(s=>{ if($(s)) $(s).textContent = 'Belum ada jadwal aktif'; });
+    ['#nextCountdown','#jNextCd'].forEach(s=>{ if($(s)) $(s).textContent = '--:--'; });
+    if($('#nextAt')) $('#nextAt').textContent = '—';
+  }
+
+  const key = `${now.getHours()}:${now.getMinutes()}`;
+  if(key !== lastFedCheck){
+    lastFedCheck = key;
+    state.schedules.forEach(async s=>{
+      if(s.active && s.time === key && state.lastFeedDate[s.id] !== todayStr()){
+        state.lastFeedDate[s.id] = todayStr();
+        await dbSetKV('lastFeedDate', state.lastFeedDate);
+        toast(`⏰ Waktunya ${s.label} — ${s.menu}`);
+        if(navigator.vibrate) navigator.vibrate([120,60,120]);
+      }
+    });
+  }
+}
+setInterval(tick, 1000);
+
+/* =========================================================
+   HOME RENDER
+========================================================= */
+function renderHome(){
+  const list = $('#goatList');
+  const goats = state.goats;
+  let sehat = 0, waspada = 0;
+  goats.forEach(g=>{
+    if(g.score === null || g.score === undefined) return;
+    if(g.score >= 85) sehat++; else waspada++;
+  });
+  $('#stTotal').textContent = goats.length;
+  $('#stSehat').textContent = sehat;
+  $('#stWaspada').textContent = waspada;
+
+  if(!goats.length){
+    list.innerHTML = `
+      <div class="card empty">
+        <div class="ico"><i class="fas fa-horse-head"></i></div>
+        <p>Belum ada kambing yang terdaftar.<br>Tambahkan kambing pertamamu untuk mulai memantau kesehatan & pakan dengan AI.</p>
+        <button class="btn" onclick="openAddGoat()"><i class="fas fa-plus"></i> Tambah Kambing</button>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = goats.map(g=>{
+    const si = statusInfo(g.score);
+    const pct = g.score == null ? 0 : g.score;
+    return `
+      <div class="goat-card" onclick="openGoatDetail('${g.id}')">
+        <div class="avatar"><i class="fas fa-horse-head"></i></div>
+        <div class="grow">
+          <div class="goat-name">
+            ${esc(g.name)}
+            <span class="badge ${si.cls}"><i class="fas ${si.icon}"></i> ${si.label}</span>
+          </div>
+          <div class="goat-meta">${esc(g.breed||'Kambing')} · ${g.weight ? g.weight + ' kg' : 'berat belum diisi'}</div>
+          <div class="bar"><i style="width:${pct}%;background:${si.color}"></i></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* =========================================================
+   GOAT CRUD
+========================================================= */
+function openAddGoat(){
+  openModal(`
+    <h3><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Tambah Kambing</h3>
+    <p class="sub">Isi data dasar kambing kamu</p>
+    <div class="field">
+      <label>Nama / Kode</label>
+      <input class="input" id="gName" placeholder="Contoh: Si Putih / K-01">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Jenis Kelamin</label>
+        <select class="input" id="gGender">
+          <option value="jantan">Jantan</option>
+          <option value="betina">Betina</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Berat (kg)</label>
+        <input class="input" id="gWeight" type="number" inputmode="decimal" placeholder="30">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Bangsa / Ras</label>
+        <input class="input" id="gBreed" placeholder="Etawa / Kacang">
+      </div>
+      <div class="field">
+        <label>Umur (bulan)</label>
+        <input class="input" id="gAge" type="number" inputmode="numeric" placeholder="12">
+      </div>
+    </div>
+    <button class="btn" onclick="saveGoat()"><i class="fas fa-floppy-disk"></i> Simpan Kambing</button>
+  `);
+}
+
+async function saveGoat(){
+  const name = $('#gName').value.trim();
+  if(!name){ toast('Nama kambing harus diisi'); return; }
+  const goat = {
+    id: uid(),
+    name: name,
+    gender: $('#gGender').value,
+    breed: $('#gBreed').value.trim() || 'Kambing',
+    age: parseFloat($('#gAge').value) || null,
+    weight: parseFloat($('#gWeight').value) || null,
+    score: null, bcs: null, lastCheck: null
+  };
+  await dbPut('goats', goat);
+  state.goats.push(goat);
+  closeModal();
+  renderAll();
+  toast('✅ Kambing berhasil ditambahkan');
+}
+
+function openGoatDetail(id){
+  const g = state.goats.find(x=>x.id === id);
+  if(!g) return;
+  const si = statusInfo(g.score);
+  const rekom = rekomendasiRingkas(g);
+
+  openModal(`
+    <h3><i class="fas fa-horse-head" style="color:var(--primary)"></i> ${esc(g.name)}</h3>
+    <p class="sub">${esc(g.breed)} · ${g.gender === 'jantan' ? 'Jantan' : 'Betina'}${g.age ? ' · ' + g.age + ' bulan' : ''}</p>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px">
+      <div class="stat" style="flex:1"><b style="color:${si.color}">${g.score ?? '—'}</b><span>Skor</span></div>
+      <div class="stat" style="flex:1"><b>${g.weight ?? '—'}</b><span>Berat (kg)</span></div>
+      <div class="stat" style="flex:1"><b>${g.bcs ?? '—'}</b><span>BCS</span></div>
+    </div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-weight:800;font-size:13px;margin-bottom:10px"><i class="fas fa-wheat-awn" style="color:var(--primary)"></i> Rekomendasi Pakan Harian</div>
+      ${rekom}
+    </div>
+
+    <div class="muted" style="margin-bottom:14px;font-size:11.5px">
+      <i class="fas fa-clock-rotate-left"></i> Terakhir dicek: ${g.lastCheck ? new Date(g.lastCheck).toLocaleString('id-ID') : 'belum pernah'}
+    </div>
+
+    <button class="btn small" onclick="closeModal();gotoCek('${g.id}')" style="margin-bottom:8px">
+      <i class="fas fa-stethoscope"></i> Cek Kesehatan Sekarang
+    </button>
+    <button class="btn small danger" onclick="deleteGoat('${g.id}')">
+      <i class="fas fa-trash"></i> Hapus Kambing
+    </button>
+  `);
+}
+
+async function deleteGoat(id){
+  if(!confirm('Hapus kambing ini?')) return;
+  await dbDelete('goats', id);
+  state.goats = state.goats.filter(g=>g.id !== id);
+  closeModal();
+  renderAll();
+  toast('Kambing dihapus');
+}
+
+function gotoCek(id){
+  gotoPage('cek');
+  $('#cekGoat').value = id;
+}
+
+function rekomendasiRingkas(g){
+  const bb = g.weight || 25;
+  const hij = Math.max(1.5, bb * 0.10);
+  const kon = Math.max(0.15, bb * 0.015);
+  const air = Math.max(2, bb * 0.12);
+  return `
+    <div class="feed-item">
+      <div class="feed-ico"><i class="fas fa-seedling"></i></div>
+      <div class="grow"><div class="feed-name">Hijauan segar</div><div class="feed-desc">Rumput gajah / odot / legum</div></div>
+      <div class="feed-val">${hij.toFixed(1)}<small>kg/hari</small></div>
+    </div>
+    <div class="feed-item">
+      <div class="feed-ico"><i class="fas fa-wheat-awn"></i></div>
+      <div class="grow"><div class="feed-name">Konsentrat</div><div class="feed-desc">Dedak + jagung + bungkil</div></div>
+      <div class="feed-val">${kon.toFixed(2)}<small>kg/hari</small></div>
+    </div>
+    <div class="feed-item" style="margin-bottom:0">
+      <div class="feed-ico"><i class="fas fa-droplet"></i></div>
+      <div class="grow"><div class="feed-name">Air minum</div><div class="feed-desc">Bersih, tersedia 24 jam</div></div>
+      <div class="feed-val">${air.toFixed(1)}<small>liter/hari</small></div>
+    </div>`;
+}
+
+/* =========================================================
+   JADWAL
+========================================================= */
+function renderJadwal(){
+  const list = $('#schedList');
+  const arr = state.schedules.slice().sort((a,b)=> a.time.localeCompare(b.time));
+  if(!arr.length){
+    list.innerHTML = `<div class="card empty"><div class="ico"><i class="fas fa-clock"></i></div><p>Belum ada jadwal pakan.<br>Tambahkan jadwal agar pakan lebih teratur.</p></div>`;
+    return;
+  }
+  list.innerHTML = arr.map(s=>`
+    <div class="sched ${s.active ? '' : 'off'}">
+      <div class="sched-time">${s.time}</div>
+      <div class="grow">
+        <div class="sched-title">${esc(s.label)}</div>
+        <div class="sched-menu">${esc(s.menu)} · ${esc(s.portion)}</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" ${s.active ? 'checked' : ''} onchange="toggleSched('${s.id}', this.checked)">
+        <span class="slider"></span>
+      </label>
+    </div>
+  `).join('');
+}
+
+async function toggleSched(id, val){
+  const s = state.schedules.find(x=>x.id === id);
+  if(s){ s.active = val; await dbPut('schedules', s); renderJadwal(); tick(); }
+}
+
+function openAddSchedule(){
+  openModal(`
+    <h3><i class="fas fa-clock" style="color:var(--primary)"></i> Tambah Jadwal Pakan</h3>
+    <p class="sub">Atur waktu & menu pakan</p>
+    <div class="field">
+      <label>Jam</label>
+      <input class="input" id="sTime" type="time" value="07:00">
+    </div>
+    <div class="field">
+      <label>Nama Jadwal</label>
+      <input class="input" id="sLabel" placeholder="Contoh: Hijauan Pagi">
+    </div>
+    <div class="field">
+      <label>Menu Pakan</label>
+      <input class="input" id="sMenu" placeholder="Contoh: Rumput gajah + lamtoro">
+    </div>
+    <div class="field">
+      <label>Porsi</label>
+      <input class="input" id="sPortion" placeholder="Contoh: 60% hijauan harian">
+    </div>
+    <button class="btn" onclick="saveSchedule()"><i class="fas fa-floppy-disk"></i> Simpan Jadwal</button>
+    <button class="btn ghost small" onclick="closeModal()" style="margin-top:8px"><i class="fas fa-xmark"></i> Batal</button>
+  `);
+}
+
+async function saveSchedule(){
+  const time  = $('#sTime').value;
+  const label = $('#sLabel').value.trim();
+  if(!time){ toast('Jam harus diisi'); return; }
+  if(!label){ toast('Nama jadwal harus diisi'); return; }
+  const sc = {
+    id: uid(), time: time, label: label,
+    menu: $('#sMenu').value.trim() || 'Hijauan segar',
+    portion: $('#sPortion').value.trim() || 'Sesuai kebutuhan',
+    active: true
+  };
+  await dbPut('schedules', sc);
+  state.schedules.push(sc);
+  closeModal();
+  renderJadwal();
+  tick();
+  toast('⏰ Jadwal ditambahkan');
+}
+
+/* =========================================================
+   CEK KESEHATAN
+========================================================= */
+const CHECKLIST = [
+  {k:'mata',  label:'Mata bersih & cerah'},
+  {k:'hidung',label:'Hidung lembap, tidak berair'},
+  {k:'mulut', label:'Mulut & gusi berwarna merah muda'},
+  {k:'nafsu', label:'Nafsu makan normal'},
+  {k:'feses', label:'Feses padat, tidak berbau menyengat'},
+  {k:'bulu',  label:'Bulu mengkilap, tidak rontok'},
+  {k:'kuku',  label:'Kuku sehat, tidak bengkak'},
+  {k:'aktif', label:'Aktif, tidak lesu'},
+  {k:'kulit', label:'Tidak ada luka / benjolan / kembung'},
+  {k:'napas', label:'Tidak batuk / napas tidak berbunyi'}
+];
+let checks = {};
+CHECKLIST.forEach(c=> checks[c.k] = true);
+
+function renderChecklist(){
+  $('#checklist').innerHTML = CHECKLIST.map(c=>`
+    <div class="check-item ${checks[c.k] ? 'on' : ''}" onclick="toggleCheck('${c.k}', this)">
+      <div class="tick"><i class="fas fa-check"></i></div>
+      <div class="check-label">${c.label}</div>
+    </div>
+  `).join('');
+}
+function toggleCheck(k, el){
+  checks[k] = !checks[k];
+  el.classList.toggle('on', checks[k]);
+}
+
+function renderCekOptions(){
+  const sel = $('#cekGoat');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Tanpa simpan ke kambing —</option>' +
+    state.goats.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+
+function estimasiBB(){
+  const ld = parseFloat($('#inLD').value);
+  const pb = parseFloat($('#inPB').value);
+  const out = $('#estBB');
+  if(ld > 0 && pb > 0){
+    const bb = (ld * ld * pb) / 10840;
+    out.textContent = bb.toFixed(1) + ' kg';
+    return bb;
+  }
+  out.textContent = '— kg';
+  return null;
+}
+
+async function runAnalysis(){
+  const goatId = $('#cekGoat').value;
+  const ld = parseFloat($('#inLD').value);
+  const pb = parseFloat($('#inPB').value);
+  const suhu = parseFloat($('#inSuhu').value);
+  const nafas = parseFloat($('#inNafas').value);
+  const nadi = parseFloat($('#inNadi').value);
+  const bcs = parseFloat($('#inBCS').value);
+
+  let bb = null;
+  if(ld > 0 && pb > 0) bb = (ld*ld*pb)/10840;
+
+  if(!bb && !goatId){
+    toast('Isi ukuran badan dulu atau pilih kambing');
+    return;
+  }
+
+  const goat = goatId ? state.goats.find(g=>g.id===goatId) : null;
+  const badChecks = CHECKLIST.filter(c=>!checks[c.k]).map(c=>c.label);
+
+  // Loading state
+  const btn = $('#btnAnalisa');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI sedang menganalisa...';
+  $('#hasilCek').innerHTML = `
+    <div class="ai-loading">
+      <div class="spinner"></div>
+      <div class="txt">Menghubungi Groq AI...
+        <small>Menganalisa ${CHECKLIST.length - badChecks.length}/${CHECKLIST.length} ciri fisik</small>
+      </div>
+    </div>`;
+
+  const payload = {
+    name: goat?.name, breed: goat?.breed, age: goat?.age, gender: goat?.gender,
+    suhu: isNaN(suhu)?null:suhu,
+    nafas: isNaN(nafas)?null:nafas,
+    nadi: isNaN(nadi)?null:nadi,
+    bcs: isNaN(bcs)?3:bcs,
+    bb: bb,
+    badChecks: badChecks
+  };
+
+  let aiResult, usedAI = true;
+  try{
+    aiResult = await aiHealthAnalysis(payload);
+  }catch(err){
+    console.warn('AI gagal, fallback lokal:', err);
+    usedAI = false;
+    const score = localHealthScore({suhu:payload.suhu, nafas:payload.nafas, nadi:payload.nadi, bcs:payload.bcs, badChecks});
+    aiResult = {
+      score: score,
+      status: score >= 85 ? 'Sehat' : score >= 65 ? 'Perlu Perhatian' : 'Perlu Penanganan',
+      ringkasan: 'Analisa lokal (AI tidak tersedia). ' + (badChecks.length ? badChecks.length + ' ciri tidak normal terdeteksi.' : 'Semua ciri fisik normal.'),
+      masalah: badChecks,
+      saran: badChecks.length ? ['Pantau 2–3 hari ke depan.', 'Pastikan air bersih & pakan berkualitas.'] : ['Lanjutkan pemeliharaan rutin.'],
+      urgensi: score >= 85 ? 'Rendah' : score >= 65 ? 'Sedang' : 'Tinggi'
+    };
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = orig;
+
+  const score = Math.round(aiResult.score);
+  const si = statusInfo(score);
+  const cls = score >= 85 ? 'green' : score >= 65 ? 'amber' : 'red';
+  const bbText = bb ? bb.toFixed(1) + ' kg' : '—';
+
+  const urgensiColor = {Rendah:'#16a34a', Sedang:'#f59e0b', Tinggi:'#ef4444'}[aiResult.urgensi] || '#64748b';
+
+  $('#hasilCek').innerHTML = `
+    <div class="result ${cls}">
+      <div class="ring"></div>
+      <div class="score">${score}<small>/100</small></div>
+      <div class="status"><i class="fas ${si.icon}"></i> ${si.label}</div>
+      <div class="sub">${esc(aiResult.ringkasan)}</div>
+    </div>
+
+    <div class="card" style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+      <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Groq AI' : 'Analisa Lokal'}</span>
+      <span class="muted" style="margin-left:auto">Urgensi: <b style="color:${urgensiColor}">${esc(aiResult.urgensi||'-')}</b></span>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <div class="avatar" style="background:#e0f2fe;color:#0369a1"><i class="fas fa-weight-scale"></i></div>
+        <div class="grow">
+          <div style="font-weight:800;font-size:14px">Estimasi Berat Badan</div>
+          <div class="muted">Rumus Schoorl (LD² × PB ÷ 10840)</div>
+        </div>
+        <div style="font-weight:800;font-size:20px;color:var(--primary-dark)">${bbText}</div>
+      </div>
+      ${bb ? rekomendasiRingkas({weight:bb}) : '<div class="muted">Isi lingkar dada & panjang badan untuk estimasi berat.</div>'}
+    </div>
+
+    ${(aiResult.masalah && aiResult.masalah.length) ? `
+      <div class="sec-title"><span><i class="fas fa-triangle-exclamation" style="color:#f59e0b"></i> Masalah Terdeteksi</span></div>
+      <div class="card" style="padding:6px 16px">
+        ${aiResult.masalah.map(m=>`<div style="padding:11px 0;border-bottom:1px solid #f1f5f2;font-size:12.5px;line-height:1.6;color:#b91c1c">
+          <i class="fas fa-circle-dot" style="font-size:7px;margin-right:8px;vertical-align:middle"></i>${esc(m)}
+        </div>`).join('')}
+      </div>
+    ` : `
+      <div class="tip" style="margin-top:4px">
+        <i class="fas fa-circle-check"></i> <b>Tidak ada masalah terdeteksi.</b> Pertahankan kebersihan kandang, pakan bergizi, dan air minum bersih.
+      </div>
+    `}
+
+    ${(aiResult.saran && aiResult.saran.length) ? `
+      <div class="sec-title"><span><i class="fas fa-clipboard-list" style="color:var(--primary)"></i> Saran Tindakan</span></div>
+      <div class="card" style="padding:6px 16px">
+        ${aiResult.saran.map((s,i)=>`<div style="display:flex;gap:10px;padding:11px 0;border-bottom:${i===aiResult.saran.length-1?'none':'1px solid #f1f5f2'};font-size:12.5px;line-height:1.6;color:#334155">
+          <b style="color:var(--primary);flex:0 0 auto">${i+1}.</b> <span>${esc(s)}</span>
+        </div>`).join('')}
+      </div>
+    ` : ''}
+  `;
+
+  // Simpan ke kambing
+  if(goatId && goat){
+    goat.score = score;
+    goat.bcs = isNaN(bcs)?3:bcs;
+    goat.lastCheck = new Date().toISOString();
+    if(bb) goat.weight = parseFloat(bb.toFixed(1));
+    await dbPut('goats', goat);
+    renderHome();
+    toast('💾 Hasil cek disimpan ke ' + goat.name);
+  }
+
+  setTimeout(()=>{ $('#hasilCek').scrollIntoView({behavior:'smooth', block:'start'}); }, 120);
+}
+
+/* =========================================================
+   PAKAN
+========================================================= */
+async function hitungPakan(){
+  const bb = parseFloat($('#pakanBB').value);
+  const fase = $('#pakanFase').value;
+  if(!bb || bb <= 0){ toast('Masukkan berat badan kambing'); return; }
+
+  const btn = $('#btnPakan');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI sedang menghitung...';
+  $('#pakanHasil').innerHTML = `
+    <div class="ai-loading">
+      <div class="spinner"></div>
+      <div class="txt">Menghitung dengan Groq AI...
+        <small>Berat ${bb} kg · fase ${fase}</small>
+      </div>
+    </div>`;
+
+  let result, usedAI = true;
+  try{
+    result = await aiFeedRecommendation(bb, fase);
+  }catch(err){
+    console.warn('AI gagal, fallback lokal:', err);
+    usedAI = false;
+    result = localFeed(bb, fase);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = orig;
+
+  const hij = Number(result.hijauan_kg) || 0;
+  const kon = Number(result.konsentrat_kg) || 0;
+  const air = Number(result.air_liter) || 0;
+  const min = Number(result.mineral_gram) || 0;
+  const menu = Array.isArray(result.menu_harian) && result.menu_harian.length
+    ? result.menu_harian
+    : ['Hijauan pagi', 'Hijauan siang', 'Hijauan sore + konsentrat'];
+  const catatan = result.catatan || '';
+
+  const times = ['06:30','12:00','16:30'];
+  const menuRows = menu.slice(0,3).map((m,i)=>`
+    <div class="sched" style="box-shadow:none;padding:10px 0;border:none;${i===2?'':'border-bottom:1px solid #f1f5f2'}">
+      <div class="sched-time">${times[i]}</div>
+      <div class="grow"><div class="sched-title">${esc(m.split(/[—\-:]/)[0].trim())}</div>
+        <div class="sched-menu">${esc(m)}</div></div>
+    </div>
+  `).join('');
+
+  $('#pakanHasil').innerHTML = `
+    <div class="card" style="background:linear-gradient(140deg,#f0fdf4,#ecfeff);border-color:#cdebd8">
+      <div class="row" style="margin-bottom:12px">
+        <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Groq AI' : 'Lokal'}</span>
+        <span class="muted" style="margin-left:auto;font-size:11px">Kebutuhan harian</span>
+      </div>
+      <div style="font-size:22px;font-weight:800;margin-top:3px">${bb} kg <span style="font-size:13px;color:var(--muted);font-weight:600">bobot badan</span></div>
+      <div style="margin-top:14px">
+        <div class="feed-item">
+          <div class="feed-ico"><i class="fas fa-seedling"></i></div>
+          <div class="grow"><div class="feed-name">Hijauan Segar</div><div class="feed-desc">Rumput + legum (60–70%)</div></div>
+          <div class="feed-val">${hij.toFixed(1)}<small>kg/hari</small></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-ico"><i class="fas fa-wheat-awn"></i></div>
+          <div class="grow"><div class="feed-name">Konsentrat</div><div class="feed-desc">Dedak, jagung, bungkil</div></div>
+          <div class="feed-val">${kon.toFixed(2)}<small>kg/hari</small></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-ico"><i class="fas fa-droplet"></i></div>
+          <div class="grow"><div class="feed-name">Air Minum</div><div class="feed-desc">Bersih, 24 jam</div></div>
+          <div class="feed-val">${air.toFixed(1)}<small>liter/hari</small></div>
+        </div>
+        <div class="feed-item" style="margin-bottom:0">
+          <div class="feed-ico"><i class="fas fa-flask"></i></div>
+          <div class="grow"><div class="feed-name">Mineral / Garam</div><div class="feed-desc">Block atau halus</div></div>
+          <div class="feed-val">${min.toFixed(0)}<small>gram/hari</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-weight:800;font-size:13px;margin-bottom:10px"><i class="fas fa-clock" style="color:var(--primary)"></i> Pembagian Waktu Makan</div>
+      ${menuRows}
+    </div>
+
+    ${catatan ? `<div class="tip"><i class="fas fa-lightbulb"></i> <b>Catatan:</b> ${esc(catatan)}</div>` : ''}
+  `;
+
+  setTimeout(()=>{ $('#pakanHasil').scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
+}
+
+/* =========================================================
+   MODAL
+========================================================= */
+function openModal(html){
+  $('#modalBox').innerHTML = '<div class="modal-handle"></div>' + html;
+  $('#modalBg').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){
+  $('#modalBg').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* =========================================================
+   INIT
+========================================================= */
+function renderAll(){
+  renderHome();
+  renderJadwal();
+  renderCekOptions();
+  renderChecklist();
+}
+
+async function init(){
+  await loadState();
+  renderAll();
+  tick();
+
+  $('#inLD').addEventListener('input', estimasiBB);
+  $('#inPB').addEventListener('input', estimasiBB);
+  $('#inBCS').addEventListener('input', e=>{
+    $('#bcsVal').textContent = e.target.value;
+  });
+}
+
+init();
+</script>
+</body>
+</html>
