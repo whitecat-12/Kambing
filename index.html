@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#16a34a">
-<title>KambingCare AI — Monitor & Pakan Kambing</title>
+<title>KambingCare · Nayra AI</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
 :root{
@@ -213,7 +213,7 @@ select.input{
 .empty .ico{font-size:34px;margin-bottom:8px;opacity:.55}
 .empty p{font-size:11.5px;margin:0 0 12px;line-height:1.6}
 
-/* AI LOADING */
+/* NAYRA AI LOADING */
 .ai-loading{
   display:flex;align-items:center;gap:10px;padding:13px;
   background:linear-gradient(135deg,#f0fdf4,#ecfeff);
@@ -241,7 +241,7 @@ select.input{
   <div class="hero">
     <div class="hero-greet">
       <i class="fas fa-hand-sparkles"></i> Selamat datang
-      <span class="ai-chip"><i class="fas fa-robot"></i> Powered by Groq AI</span>
+      <span class="ai-chip"><i class="fas fa-robot"></i> Nayra AI</span>
     </div>
     <div class="clock" id="clockBig">--:--<span class="sec">:--</span></div>
     <div class="hero-date" id="heroDate">—</div>
@@ -299,7 +299,7 @@ select.input{
 <section id="page-cek" class="page">
   <div class="sec-title" style="margin-top:4px">
     <span><i class="fas fa-stethoscope" style="color:var(--primary)"></i> Cek Kesehatan</span>
-    <span class="pill-ai"><i class="fas fa-robot"></i> AI</span>
+    <span class="pill-ai"><i class="fas fa-robot"></i> Nayra AI</span>
   </div>
 
   <div class="card">
@@ -342,7 +342,7 @@ select.input{
   <div class="card" id="checklist"></div>
 
   <button class="btn" id="btnAnalisa" onclick="runAnalysis()">
-    <i class="fas fa-wand-magic-sparkles"></i> Analisa dengan AI
+    <i class="fas fa-wand-magic-sparkles"></i> Analisa dengan Nayra AI
   </button>
   <div id="hasilCek" style="margin-top:12px"></div>
 </section>
@@ -351,7 +351,7 @@ select.input{
 <section id="page-pakan" class="page">
   <div class="sec-title" style="margin-top:4px">
     <span><i class="fas fa-wheat-awn" style="color:var(--primary)"></i> Rekomendasi Pakan</span>
-    <span class="pill-ai"><i class="fas fa-robot"></i> AI</span>
+    <span class="pill-ai"><i class="fas fa-robot"></i> Nayra AI</span>
   </div>
 
   <div class="card">
@@ -370,7 +370,7 @@ select.input{
       </select>
     </div>
     <button class="btn" id="btnPakan" onclick="hitungPakan()">
-      <i class="fas fa-calculator"></i> Hitung dengan AI
+      <i class="fas fa-calculator"></i> Hitung dengan Nayra AI
     </button>
   </div>
 
@@ -415,7 +415,7 @@ select.input{
   </details>
 </section>
 
-<!-- ============ NAV (TIDAK DIUBAH) ============ -->
+<!-- ============ NAV ============ -->
 <nav class="bottomnav">
   <button class="navbtn active" data-page="home">
     <i class="fas fa-house"></i><span>Beranda</span>
@@ -440,6 +440,8 @@ select.input{
 <script>
 /* =========================================================
    KONFIGURASI
+   Nayra AI — dibranding untuk pengalaman pengguna.
+   Backend: Groq (llama-3.3-70b-versatile).
 ========================================================= */
 const GROQ_API_KEY = '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';
 const GROQ_MODEL   = 'llama-3.3-70b-versatile';
@@ -569,9 +571,9 @@ function esc(s){
 }
 
 /* =========================================================
-   GROQ AI
+   NAYRA AI (Groq backend)
 ========================================================= */
-async function callGroq(messages, opts = {}){
+async function callNayra(messages, opts = {}){
   const body = {
     model: opts.model || GROQ_MODEL,
     messages,
@@ -589,16 +591,16 @@ async function callGroq(messages, opts = {}){
   });
   if(!res.ok){
     const err = await res.text();
-    throw new Error('Groq API error ' + res.status + ': ' + err.slice(0,200));
+    throw new Error('Nayra AI error ' + res.status + ': ' + err.slice(0,200));
   }
   const data = await res.json();
   return data.choices?.[0]?.message?.content || '';
 }
 
 async function aiHealthAnalysis(payload){
-  const sys = `Kamu adalah dokter hewan spesialis kambing di Indonesia. Berikan analisa kesehatan SINGKAT, PRAKTIS, dan AKURAT dalam Bahasa Indonesia. Selalu jawab dalam format JSON valid.`;
+  const sys = `Kamu adalah Nayra AI — asisten dokter hewan virtual spesialis kambing di Indonesia. Kamu ramah, hangat, dan profesional. Berikan analisa kesehatan SINGKAT, PRAKTIS, dan AKURAT dalam Bahasa Indonesia. Selalu jawab dalam format JSON valid.`;
 
-  const user = `Analisa data kesehatan kambing berikut:
+  const user = `Halo Nayra AI, tolong analisa data kesehatan kambing berikut:
 
 Nama: ${payload.name || 'Kambing'}
 Ras: ${payload.breed || '-'}
@@ -627,7 +629,7 @@ Berikan respons JSON dengan format PERSIS berikut:
 
 Pedoman skor: 90-100 sangat sehat, 75-89 sehat, 60-74 perlu perhatian, <60 perlu penanganan. Jangan gunakan markdown.`;
 
-  const raw = await callGroq([
+  const raw = await callNayra([
     {role:'system', content:sys},
     {role:'user', content:user}
   ], {json:true, max_tokens:600, temperature:0.3});
@@ -639,7 +641,7 @@ Pedoman skor: 90-100 sangat sehat, 75-89 sehat, 60-74 perlu perhatian, <60 perlu
   }catch(e){
     const m = raw.match(/\{[\s\S]*\}/);
     if(m) return JSON.parse(m[0]);
-    throw new Error('Invalid JSON from AI');
+    throw new Error('Invalid JSON from Nayra AI');
   }
 }
 
@@ -649,9 +651,9 @@ async function aiFeedRecommendation(bb, fase){
     dewasa:'Dewasa > 6 bulan', bunting:'Bunting / Menyusui', gemuk:'Program penggemukan'
   }[fase] || fase;
 
-  const sys = `Kamu ahli nutrisi ternak kambing Indonesia. Jawab SINGKAT dan PRAKTIS dalam format JSON valid.`;
-  const user = `Kambing berat ${bb} kg, fase: ${faseLabel}.
-Berikan rekomendasi pakan harian dalam JSON:
+  const sys = `Kamu adalah Nayra AI — ahli nutrisi ternak kambing Indonesia. Ramah, hangat, dan praktis. Jawab SINGKAT dalam format JSON valid.`;
+  const user = `Halo Nayra AI, kambing saya berat ${bb} kg, fase: ${faseLabel}.
+Tolong berikan rekomendasi pakan harian dalam JSON:
 {
   "hijauan_kg": <angka>,
   "konsentrat_kg": <angka>,
@@ -661,7 +663,7 @@ Berikan rekomendasi pakan harian dalam JSON:
   "catatan": "<1-2 kalimat saran penting>"
 }`;
 
-  const raw = await callGroq([
+  const raw = await callNayra([
     {role:'system', content:sys},
     {role:'user', content:user}
   ], {json:true, max_tokens:450, temperature:0.35});
@@ -670,7 +672,7 @@ Berikan rekomendasi pakan harian dalam JSON:
   catch(e){
     const m = raw.match(/\{[\s\S]*\}/);
     if(m) return JSON.parse(m[0]);
-    throw new Error('Invalid JSON from AI');
+    throw new Error('Invalid JSON from Nayra AI');
   }
 }
 
@@ -706,7 +708,7 @@ function localFeed(bb, fase){
     air_liter: Math.max(2, bb*0.12),
     mineral_gram: Math.max(10, bb*0.5),
     menu_harian: ['Hijauan pagi (rumput + legum)', 'Hijauan siang + air bersih', 'Hijauan sore + konsentrat'],
-    catatan: 'Rekomendasi lokal (AI tidak tersedia). Pastikan air bersih 24 jam.'
+    catatan: 'Rekomendasi lokal (Nayra AI sedang offline). Pastikan air bersih 24 jam.'
   };
 }
 
@@ -822,7 +824,7 @@ function renderHome(){
     list.innerHTML = `
       <div class="card empty">
         <div class="ico"><i class="fas fa-horse-head"></i></div>
-        <p>Belum ada kambing yang terdaftar.<br>Tambahkan kambing pertamamu untuk mulai memantau kesehatan & pakan dengan AI.</p>
+        <p>Belum ada kambing yang terdaftar.<br>Tambahkan kambing pertamamu untuk mulai memantau kesehatan & pakan bersama Nayra AI.</p>
         <button class="btn" onclick="openAddGoat()"><i class="fas fa-plus"></i> Tambah Kambing</button>
       </div>`;
     return;
@@ -1123,11 +1125,11 @@ async function runAnalysis(){
   const btn = $('#btnAnalisa');
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI sedang menganalisa...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Nayra AI sedang menganalisa...';
   $('#hasilCek').innerHTML = `
     <div class="ai-loading">
       <div class="spinner"></div>
-      <div class="txt">Menghubungi Groq AI...
+      <div class="txt">Menghubungi Nayra AI...
         <small>Menganalisa ${CHECKLIST.length - badChecks.length}/${CHECKLIST.length} ciri fisik</small>
       </div>
     </div>`;
@@ -1146,13 +1148,13 @@ async function runAnalysis(){
   try{
     aiResult = await aiHealthAnalysis(payload);
   }catch(err){
-    console.warn('AI gagal, fallback lokal:', err);
+    console.warn('Nayra AI gagal, fallback lokal:', err);
     usedAI = false;
     const score = localHealthScore({suhu:payload.suhu, nafas:payload.nafas, nadi:payload.nadi, bcs:payload.bcs, badChecks});
     aiResult = {
       score: score,
       status: score >= 85 ? 'Sehat' : score >= 65 ? 'Perlu Perhatian' : 'Perlu Penanganan',
-      ringkasan: 'Analisa lokal (AI tidak tersedia). ' + (badChecks.length ? badChecks.length + ' ciri tidak normal terdeteksi.' : 'Semua ciri fisik normal.'),
+      ringkasan: 'Analisa lokal (Nayra AI sedang offline). ' + (badChecks.length ? badChecks.length + ' ciri tidak normal terdeteksi.' : 'Semua ciri fisik normal.'),
       masalah: badChecks,
       saran: badChecks.length ? ['Pantau 2–3 hari ke depan.', 'Pastikan air bersih & pakan berkualitas.'] : ['Lanjutkan pemeliharaan rutin.'],
       urgensi: score >= 85 ? 'Rendah' : score >= 65 ? 'Sedang' : 'Tinggi'
@@ -1178,7 +1180,7 @@ async function runAnalysis(){
     </div>
 
     <div class="card" style="padding:9px 12px;display:flex;align-items:center;gap:8px">
-      <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Groq AI' : 'Analisa Lokal'}</span>
+      <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Nayra AI' : 'Analisa Lokal'}</span>
       <span class="muted" style="margin-left:auto">Urgensi: <b style="color:${urgensiColor}">${esc(aiResult.urgensi||'-')}</b></span>
     </div>
 
@@ -1241,11 +1243,11 @@ async function hitungPakan(){
   const btn = $('#btnPakan');
   const orig = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AI sedang menghitung...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Nayra AI sedang menghitung...';
   $('#pakanHasil').innerHTML = `
     <div class="ai-loading">
       <div class="spinner"></div>
-      <div class="txt">Menghitung dengan Groq AI...
+      <div class="txt">Menghitung dengan Nayra AI...
         <small>Berat ${bb} kg · fase ${fase}</small>
       </div>
     </div>`;
@@ -1254,7 +1256,7 @@ async function hitungPakan(){
   try{
     result = await aiFeedRecommendation(bb, fase);
   }catch(err){
-    console.warn('AI gagal, fallback lokal:', err);
+    console.warn('Nayra AI gagal, fallback lokal:', err);
     usedAI = false;
     result = localFeed(bb, fase);
   }
@@ -1283,7 +1285,7 @@ async function hitungPakan(){
   $('#pakanHasil').innerHTML = `
     <div class="card" style="background:linear-gradient(140deg,#f0fdf4,#ecfeff);border-color:#cdebd8">
       <div class="row" style="margin-bottom:10px">
-        <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Groq AI' : 'Lokal'}</span>
+        <span class="pill-ai"><i class="fas fa-robot"></i> ${usedAI ? 'Nayra AI' : 'Lokal'}</span>
         <span class="muted" style="margin-left:auto;font-size:10px">Kebutuhan harian</span>
       </div>
       <div style="font-size:18px;font-weight:800;margin-top:2px">${bb} kg <span style="font-size:11px;color:var(--muted);font-weight:600">bobot badan</span></div>
